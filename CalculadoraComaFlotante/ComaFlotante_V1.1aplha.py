@@ -468,13 +468,3 @@ def main():
 
 
 main()
-
-# """ Analiza un numero segun la parte entera.
-
-# Parameters:
-# num (float): Numero flotante.
-
-# Return:
-# string: Como correr la coma.
-
-# """
