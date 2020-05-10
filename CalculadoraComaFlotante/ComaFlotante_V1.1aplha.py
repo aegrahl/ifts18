@@ -1,9 +1,30 @@
 import math
 from math import modf
+from os import system, name
+
 
 # Constantes:
 EXCESO = 127
 BITSMANTISA = 23
+
+diccHexa = {
+    "0000": 0,
+    "0001": 1,
+    "0010": 2,
+    "0011": 3,
+    "0100": 4,
+    "0101": 5,
+    "0110": 6,
+    "0111": 7,
+    "1000": 8,
+    "1001": 9,
+    "1010": "A",
+    "1011": "B",
+    "1100": "C",
+    "1101": "D",
+    "1110": "E",
+    "1111": "F",
+}
 
 
 def FloatToPartInt(num):
@@ -57,7 +78,9 @@ def EvaluarSigno(numBase10):
 
     """
     parteEntera = FloatToPartInt(numBase10)
-    if parteEntera > 0:
+    if parteEntera == 0:
+        return 0
+    elif parteEntera > 0:
         return "0"
     else:
         return "1"
@@ -190,8 +213,53 @@ def valorAbsoluto(numBase10):
     """
     # Valor absoluto del numero
     numeroPositivo = abs(numBase10)
-    print(f"Debug numeroPositivo: {numeroPositivo}")
+    # print(f"Debug numeroPositivo: {numeroPositivo}")
     return numeroPositivo
+
+
+def separarBinario(IEEE754Binario):
+    """Recibe el binIEEE y lo separa en bytes.
+    Parameters:
+    IEEE754Binario (string): binarioIEEE a convertir.
+    Return: List(string)
+    
+    """
+    BinHexa = []
+    for i in range(0, 32, 4):
+        BinHexa.append(IEEE754Binario[i : i + 4])
+    # for i in BinHexa:
+    #     print(f"{i}", end=" ")
+    return BinHexa
+
+
+def convertirHexa(listBinario):
+    """Recibe el una lista de bytes y la devuelve en hexadecimal.
+    Parameters:
+    listBinario List(string): Listas de bytes.
+    Return: List(string): Lista de hexadecimales
+    """
+    hexadecimal = []
+
+    for b in listBinario:
+        if b in diccHexa:
+            valor = diccHexa[b]
+            hexadecimal.append(valor)
+    return hexadecimal
+
+
+def binIEEEAhexa(binIEEE):
+    """Recibe el una lista de hexadecimales y la devuelve un string 
+    con valor hexadecimal.
+    Parameters:
+    binIEEE List(string): Listas de bytes Hexadecimales.
+    Return: string: Hexadecimale IEEE754
+    """
+    listBinario = separarBinario(binIEEE)
+    listHexa = convertirHexa(listBinario)
+    result = ""
+    for i in listHexa:
+        result += str(i)
+    return result
 
 
 def ConvertirComaFIzq(numBase10):
@@ -199,7 +267,7 @@ def ConvertirComaFIzq(numBase10):
     En el caso que la coma se mueva a la izq.
     Parameters:
     numBase10 (float): Numero a convertir.
-    Return: List(string) : [0] signo; [1] exponente; [2] mantisa.
+    Return: List(string) : [0] signo; [1] exponente; [2] mantisa; [3] HexaIEEE754.
     """
     resultado = []
     signo = EvaluarSigno(numBase10)
@@ -229,9 +297,11 @@ def ConvertirComaFIzq(numBase10):
     # print(f"Debug: strMyBin: {strMyBin}")
     mantisa = strMyBin + str(decimalesBinario)
     # print(f"Debug: mantisa Base 2: {mantisa}")
+    hexaIEE = binIEEEAhexa(str(signo) + str(exponenteBinario) + str(mantisa))
     resultado.append(signo)
     resultado.append(exponenteBinario)
     resultado.append(mantisa)
+    resultado.append(hexaIEE)
     return resultado
 
 
@@ -240,7 +310,7 @@ def ConvertirComaF(numBase10):
     En el caso que la coma no se mueva por tener valor 1 como entero.
     Parameters:
     numBase10 (float): Numero a convertir.
-    Return: List(string) : [0] signo; [1] exponente; [2] mantisa.
+    Return: List(string) : [0] signo; [1] exponente; [2] mantisa; [3] HexaIEEE754.
     """
     resultado = []
     signo = EvaluarSigno(numBase10)
@@ -249,13 +319,17 @@ def ConvertirComaF(numBase10):
     enteroBinario = baseTenToBinary(parteEntera)
     exponenteBase10 = 127
     exponenteBinario = baseTenToBinary(exponenteBase10)
+    exponenteBinario = str(exponenteBinario)  # Dado que tiene un 0 delante
+    exponenteBinario = "0" + exponenteBinario
     numMantisa = 23
     decimalBase10 = FloatToPartDeci(numBase10)
     decimalesBinario = decimalToBinary(decimalBase10, numMantisa)
     mantisa = str(decimalesBinario)
+    hexaIEE = binIEEEAhexa(str(signo) + str(exponenteBinario) + str(mantisa))
     resultado.append(signo)
     resultado.append(exponenteBinario)
     resultado.append(mantisa)
+    resultado.append(hexaIEE)
     return resultado
 
 
@@ -264,21 +338,78 @@ def ConvertirComaFDer(numBase10):
     En el caso que la coma se mueva a la derecha.
     Parameters:
     numBase10 (float): Numero a convertir.
-    Return: List(string) : [0] signo; [1] exponente; [2] mantisa.
+    Return: List(string) : [0] signo; [1] exponente; [2] mantisa; [3] HexaIEEE754.
 
     """
     resultado = []
     signo = EvaluarSigno(numBase10)
     numBase10 = valorAbsoluto(numBase10)
+    # print(f"valor absoluto: {numBase10}")
     comas = contarComasDer(numBase10)
     exponenteBase10 = EXCESO - comas
     exponenteBinario = baseTenToBinary(exponenteBase10)
+    exponenteBinario = str(exponenteBinario)  # Dado que tiene un 0 delante
+    exponenteBinario = "0" + exponenteBinario
     numDecimal = FloatToPartDeci(numBase10)
     mantisa = calcMantisaDer(numDecimal, comas)
+    hexaIEE = binIEEEAhexa(str(signo) + str(exponenteBinario) + str(mantisa))
     resultado.append(signo)
     resultado.append(exponenteBinario)
     resultado.append(mantisa)
+    resultado.append(hexaIEE)
     return resultado
+
+
+def imprimirResultado(resultado):
+    print("\u2554", end="")
+    for i in range(66):
+        print(
+            "\u2550", end="",
+        )
+    print("\u2557", end="")
+    print(
+        f"\n\u2551 Signo: {resultado[0]} \u2551 Exponente: {resultado[1]} \u2551 Mantisa: {resultado[2]}\u2551"
+    )
+    print("\u255A", end="")
+    for i in range(66):
+        print(
+            "\u2550", end="",
+        )
+    print("\u255D")
+    print("\u2554", end="")
+    for i in range(66):
+        print(
+            "\u2550", end="",
+        )
+    print("\u2557", end="")
+    print(
+        f"\n\u2551 IEEE754 Hexadecimal: {resultado[3]}                                    \u2551"
+    )
+    print("\u255A", end="")
+    for i in range(66):
+        print(
+            "\u2550", end="",
+        )
+    print("\u255D")
+
+
+def clear():
+    # Para  windows
+    if name == "nt":
+        _ = system("cls")
+
+    # Para mac y linux(here, os.name is 'posix')
+    else:
+        _ = system("clear")
+
+
+def continuar():
+    continuar = input("Presione y/Y para continuar y presione ENTER\n")
+    if continuar == "y" or continuar == "Y":
+        main()
+    else:
+        clear()
+        exit(0)
 
 
 def decidirConversion(comaCorrida, numBase10):
@@ -293,35 +424,44 @@ def decidirConversion(comaCorrida, numBase10):
     """
     # print(f"Debug signo: {signo}")
     if comaCorrida == "No se corre coma":
-        numBase10 = V
         resultado = ConvertirComaF(numBase10)
-        print(
-            f"Signo: {resultado[0]} ; Exponente: {resultado[1]} ; Mantisa: {resultado[2]} "
-        )
+        imprimirResultado(resultado)
+        continuar()
     elif comaCorrida == "Coma a la derecha":
         resultado = ConvertirComaFDer(numBase10)
-        print(
-            f"Signo: {resultado[0]} ; Exponente: {resultado[1]} ; Mantisa: {resultado[2]} "
-        )
+        imprimirResultado(resultado)
+        continuar()
     elif comaCorrida == "Coma a la izquierda":
         resultado = ConvertirComaFIzq(numBase10)
-        print(
-            f"Signo: {resultado[0]} ; Exponente: {resultado[1]} ; Mantisa: {resultado[2]} "
-        )
+        imprimirResultado(resultado)
+        continuar()
 
 
 def imprimirBanner():
     """
     Imprime el Banner
     """
+    print("\u2554", end="")
+    for i in range(66):
+        print(
+            "\u2550", end="",
+        )
+    print("\u2557", end="")
     print(
-        "------------------------------------------\nNumero racional a punto flotante 32 bits\n------------------------------------------"
+        f"\n\u2551 Conversion Base10 a Flotante Simple IEEE7545          (32bits)   \u2551"
     )
+    print("\u255A", end="")
+    for i in range(66):
+        print(
+            "\u2550", end="",
+        )
+    print("\u255D")
 
 
 def main():
+    clear()
     imprimirBanner()
-    numero = float(input("Ingrese el numero base 10: "))
+    numero = float(input(" Ingrese un numero base 10: "))
     comaCorrida = analizarNumero(numero)
     decidirConversion(comaCorrida, numero)
     # print(f"Debug. analizarNumero: {comaCorrida}")
