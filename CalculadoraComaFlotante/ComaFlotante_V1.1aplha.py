@@ -51,6 +51,18 @@ def FloatToPartDeci(num):
     return parteDecimal
 
 
+def valorAbsoluto(numBase10):
+    """ Verifica el signo del numero ingresado y lo devuelve sin signo
+    Parameters:
+    numBase10 (float): Numero a convertir.
+    Return: float
+    """
+    # Valor absoluto del numero
+    numeroPositivo = abs(numBase10)
+    # print(f"Debug numeroPositivo: {numeroPositivo}")
+    return numeroPositivo
+
+
 def analizarNumero(num):
     """ Indica como correr la coma.
 
@@ -60,6 +72,7 @@ def analizarNumero(num):
     string: Como correr la coma.
 
     """
+    num = valorAbsoluto(num)
     parteEntera = FloatToPartInt(num)
     if parteEntera == 1:
         return "No se corre coma"
@@ -203,18 +216,6 @@ def calcMantisaDer(numDecimal, comas):
     binario = decimalToBinary(numDecimal, multMant)
     result = binario[comas:multMant]
     return result
-
-
-def valorAbsoluto(numBase10):
-    """ Verifica el signo del numero ingresado y lo devuelve sin signo
-    Parameters:
-    numBase10 (float): Numero a convertir.
-    Return: float
-    """
-    # Valor absoluto del numero
-    numeroPositivo = abs(numBase10)
-    # print(f"Debug numeroPositivo: {numeroPositivo}")
-    return numeroPositivo
 
 
 def separarBinario(IEEE754Binario):
@@ -404,7 +405,7 @@ def clear():
 
 
 def continuar():
-    continuar = input("Presione y/Y para continuar y presione ENTER\n")
+    continuar = input("Presione y/Y para continuar + ENTER \n")
     if continuar == "y" or continuar == "Y":
         main()
     else:
@@ -448,7 +449,7 @@ def imprimirBanner():
         )
     print("\u2557", end="")
     print(
-        f"\n\u2551 Conversion Base10 a Flotante Simple IEEE7545          (32bits)   \u2551"
+        f"\n\u2551 Conversion Base10 a Flotante Simple IEEE754           (32bits)   \u2551"
     )
     print("\u255A", end="")
     for i in range(66):
