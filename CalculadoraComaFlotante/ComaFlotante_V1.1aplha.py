@@ -143,6 +143,57 @@ def decimalToBinary(numDecimal, NumMantisa):
     return result
 
 
+def contarComasDer(numDecimal):
+    """ Recibe la parte decimal y devuelve cuantas
+    veces se corre la coma a la derecha.
+    Parameters:
+    numDecimal (float):.
+    Return: int : Lugares que se come la coma a la derecha.
+
+    """
+    binary = []
+    stop = 0
+    x = 0
+    while stop < 1:
+        decimal = numDecimal * 2
+        myBinary = modf(decimal)
+        binary.append(int(myBinary[1]))
+        numDecimal = myBinary[0]
+        stop = myBinary[1]
+        x += 1
+    result = ""
+    # for i in binary:
+    #     result += str(i)
+    # len(result)
+    # return len(result)
+    return x
+
+
+def calcMantisaDer(numDecimal, comas):
+    """ Calcula la mantisa para el caso que se corra la coma a la derecha.
+    Parameters:
+    numDecimal (float): Numero a convertir.
+    comas (int): Cantidad de veces que se corrio la coma a la Derecha.
+    Return: string: Binario
+    """
+    multMant = BITSMANTISA + comas
+    binario = decimalToBinary(numDecimal, multMant)
+    result = binario[comas:multMant]
+    return result
+
+
+def valorAbsoluto(numBase10):
+    """ Verifica el signo del numero ingresado y lo devuelve sin signo
+    Parameters:
+    numBase10 (float): Numero a convertir.
+    Return: float
+    """
+    # Valor absoluto del numero
+    numeroPositivo = abs(numBase10)
+    print(f"Debug numeroPositivo: {numeroPositivo}")
+    return numeroPositivo
+
+
 def ConvertirComaFIzq(numBase10):
     """ Recibe el numero Real y devuelve signo, exponente y mantisa.
     En el caso que la coma se mueva a la izq.
@@ -152,6 +203,7 @@ def ConvertirComaFIzq(numBase10):
     """
     resultado = []
     signo = EvaluarSigno(numBase10)
+    numBase10 = valorAbsoluto(numBase10)
     parteEntera = FloatToPartInt(numBase10)
     # print(f"Debug: Parte Entera: {parteEntera}")
     enteroBinario = baseTenToBinary(parteEntera)
@@ -183,30 +235,6 @@ def ConvertirComaFIzq(numBase10):
     return resultado
 
 
-def contarComasDer(numDecimal):
-    """ Recibe la parte decimal y devuelve cuantas
-    veces se corre la coma a la derecha.
-    Parameters:
-    numDecimal (float):.
-    Return: int : Lugares que se come la coma a la derecha.
-
-    """
-    binary = []
-    stop = 0
-
-    while stop < 1:
-        decimal = numDecimal * 2
-        myBinary = modf(decimal)
-        binary.append(int(myBinary[1]))
-        numDecimal = myBinary[0]
-        stop = myBinary[1]
-    result = ""
-    for i in binary:
-        result += str(i)
-    len(result)
-    return len(result)
-
-
 def ConvertirComaF(numBase10):
     """ Recibe el numero Real y devuelve signo, exponente y mantisa.
     En el caso que la coma no se mueva por tener valor 1 como entero.
@@ -216,6 +244,7 @@ def ConvertirComaF(numBase10):
     """
     resultado = []
     signo = EvaluarSigno(numBase10)
+    numBase10 = valorAbsoluto(numBase10)
     parteEntera = FloatToPartInt(numBase10)
     enteroBinario = baseTenToBinary(parteEntera)
     exponenteBase10 = 127
@@ -224,6 +253,28 @@ def ConvertirComaF(numBase10):
     decimalBase10 = FloatToPartDeci(numBase10)
     decimalesBinario = decimalToBinary(decimalBase10, numMantisa)
     mantisa = str(decimalesBinario)
+    resultado.append(signo)
+    resultado.append(exponenteBinario)
+    resultado.append(mantisa)
+    return resultado
+
+
+def ConvertirComaFDer(numBase10):
+    """ Recibe el numero Real y devuelve signo, exponente y mantisa.
+    En el caso que la coma se mueva a la derecha.
+    Parameters:
+    numBase10 (float): Numero a convertir.
+    Return: List(string) : [0] signo; [1] exponente; [2] mantisa.
+
+    """
+    resultado = []
+    signo = EvaluarSigno(numBase10)
+    numBase10 = valorAbsoluto(numBase10)
+    comas = contarComasDer(numBase10)
+    exponenteBase10 = EXCESO - comas
+    exponenteBinario = baseTenToBinary(exponenteBase10)
+    numDecimal = FloatToPartDeci(numBase10)
+    mantisa = calcMantisaDer(numDecimal, comas)
     resultado.append(signo)
     resultado.append(exponenteBinario)
     resultado.append(mantisa)
@@ -242,13 +293,16 @@ def decidirConversion(comaCorrida, numBase10):
     """
     # print(f"Debug signo: {signo}")
     if comaCorrida == "No se corre coma":
+        numBase10 = V
         resultado = ConvertirComaF(numBase10)
         print(
             f"Signo: {resultado[0]} ; Exponente: {resultado[1]} ; Mantisa: {resultado[2]} "
         )
     elif comaCorrida == "Coma a la derecha":
-        comas = contarComasDer(numBase10)
-        return None
+        resultado = ConvertirComaFDer(numBase10)
+        print(
+            f"Signo: {resultado[0]} ; Exponente: {resultado[1]} ; Mantisa: {resultado[2]} "
+        )
     elif comaCorrida == "Coma a la izquierda":
         resultado = ConvertirComaFIzq(numBase10)
         print(
